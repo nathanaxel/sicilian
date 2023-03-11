@@ -70,8 +70,6 @@ build/CMakeFiles/autotrader3.dir/main.cc.o.d
 build/CMakeFiles/autotrader3.dir/progress.make
 build/CMakeFiles/cmake.check_cache
 build/CMakeFiles/CMakeDirectoryInformation.cmake
-build/CMakeFiles/CMakeError.log
-build/CMakeFiles/CMakeOutput.log
 build/CMakeFiles/Makefile.cmake
 build/CMakeFiles/Makefile2
 build/CMakeFiles/progress.marks
@@ -111,7 +109,6 @@ data/market_data1.csv
 data/market_data2.csv
 data/market_data3.csv
 data/market_data4.csv
-exchange.log
 info.dat
 libs/CMakeLists.txt
 libs/ready_trader_go/application.cc
@@ -4569,3 +4566,17 @@ venv/lib/python3.8/site-packages/shiboken6/libshiboken6.abi3.6.2.dylib
 venv/lib/python3.8/site-packages/shiboken6/Shiboken.abi3.so
 venv/lib/python3.8/site-packages/shiboken6/Shiboken.pyi
 venv/pyvenv.cfg
+build/CMakeFiles/autotrader.dir/compiler_depend.internal
+build/CMakeFiles/autotrader1.dir/compiler_depend.internal
+build/CMakeFiles/autotrader1.dir/main1.cc.o
+build/CMakeFiles/autotrader1.dir/main1.cc.o.d
+build/CMakeFiles/autotrader2.dir/compiler_depend.internal
+build/CMakeFiles/autotrader2.dir/main2.cc.o
+build/CMakeFiles/autotrader2.dir/main2.cc.o.d
+build/CMakeFiles/autotrader3.dir/compiler_depend.internal
+build/CMakeFiles/autotrader3.dir/main3.cc.o
+build/CMakeFiles/autotrader3.dir/main3.cc.o.d
+build/libs/ready_trader_go/CMakeFiles/ready_trader_go_lib.dir/compiler_depend.internal
+autotrader.log
+build/CMakeFiles/CMakeError.log
+build/CMakeFiles/CMakeOutput.log

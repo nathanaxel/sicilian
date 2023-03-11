@@ -25,7 +25,7 @@
 
 #include <iostream>      
 
-#include<unistd.h>               
+#include <unistd.h>               
 
 using namespace ReadyTraderGo;
 
@@ -94,14 +94,14 @@ void AutoTrader::OrderBookMessageHandler(Instrument instrument,
         if (mPosition > 30){
             mAskId = mNextMessageId++;
             SendInsertOrder(mAskId, Side::SELL, newAskPrice - PROFIT, 30, Lifespan::FILL_AND_KILL);
-            std::cout<<"sell off " << newAskPrice - PROFIT << std::endl;
+            //std::cout<<"sell off " << newAskPrice - PROFIT << std::endl;
             mAsks.emplace(mAskId);
             return;
         }
         else if (mPosition < -30){
             mBidId = mNextMessageId++;
             SendInsertOrder(mBidId, Side::BUY, newBidPrice + PROFIT, 30, Lifespan::FILL_AND_KILL);
-            std::cout<<"buy off " << newAskPrice + PROFIT << std::endl;
+            //std::cout<<"buy off " << newAskPrice + PROFIT << std::endl;
             mBids.emplace(mBidId);
             return;
         }
@@ -126,7 +126,7 @@ void AutoTrader::OrderBookMessageHandler(Instrument instrument,
         {
             mAskId = mNextMessageId++;
             mAskPrice = newAskPrice;
-            std::cout << "sell " << newAskPrice << std::endl;
+            //std::cout << "sell " << newAskPrice << std::endl;
             SendInsertOrder(mAskId, Side::SELL, newAskPrice, LOT_SIZE, Lifespan::GOOD_FOR_DAY);
             mAsks.emplace(mAskId);
         }
@@ -134,7 +134,7 @@ void AutoTrader::OrderBookMessageHandler(Instrument instrument,
         {
             mBidId = mNextMessageId++;
             mBidPrice = newBidPrice;
-            std::cout << "buy " << mBidPrice << std::endl;
+            //std::cout << "buy " << mBidPrice << std::endl;
             SendInsertOrder(mBidId, Side::BUY, newBidPrice, LOT_SIZE, Lifespan::GOOD_FOR_DAY);
             mBids.emplace(mBidId);
         }
