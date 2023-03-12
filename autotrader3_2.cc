@@ -16,7 +16,6 @@
 //     License along with Ready Trader Go.  If not, see
 //     <https://www.gnu.org/licenses/>.
 #include <ready_trader_go/logging.h>
-#include <unistd.h>
 
 #include <array>
 #include <boost/asio/io_context.hpp>
@@ -30,28 +29,23 @@ RTG_INLINE_GLOBAL_LOGGER_WITH_CHANNEL(LG_AT, "AUTO")
 
 constexpr int POSITION_LIMIT = 100;
 constexpr int TICK_SIZE_IN_CENTS = 100;
-constexpr int MIN_BID_NEAREST_TICK = (MINIMUM_BID + TICK_SIZE_IN_CENTS) /
-                                     TICK_SIZE_IN_CENTS * TICK_SIZE_IN_CENTS;
-constexpr int MAX_ASK_NEAREST_TICK =
-    MAXIMUM_ASK / TICK_SIZE_IN_CENTS * TICK_SIZE_IN_CENTS;
+constexpr int MIN_BID_NEAREST_TICK = (MINIMUM_BID + TICK_SIZE_IN_CENTS) / TICK_SIZE_IN_CENTS * TICK_SIZE_IN_CENTS;
+constexpr int MAX_ASK_NEAREST_TICK = MAXIMUM_ASK / TICK_SIZE_IN_CENTS * TICK_SIZE_IN_CENTS;
 
 constexpr double TAKER_FEE = 0.0002;
 constexpr double MAKER_FEE = -0.0001;
 
 signed long runroundCeilHundredth(signed long d);
 signed long runroundFloorHundredth(signed long d);
-AutoTrader::AutoTrader(boost::asio::io_context& context)
-    : BaseAutoTrader(context) {}
+AutoTrader::AutoTrader(boost::asio::io_context& context): BaseAutoTrader(context) {}
 
 void AutoTrader::DisconnectHandler() {
     BaseAutoTrader::DisconnectHandler();
     RLOG(LG_AT, LogLevel::LL_INFO) << "execution connection lost";
 }
 
-void AutoTrader::ErrorMessageHandler(unsigned long clientOrderId,
-                                     const std::string& errorMessage) {
-    RLOG(LG_AT, LogLevel::LL_INFO)
-        << "error with order " << clientOrderId << ": " << errorMessage;
+void AutoTrader::ErrorMessageHandler(unsigned long clientOrderId, const std::string& errorMessage) {
+    RLOG(LG_AT, LogLevel::LL_INFO) << "error with order " << clientOrderId << ": " << errorMessage;
     if (clientOrderId != 0 && ((mAsks.count(clientOrderId) == 1) ||
                                (mBids.count(clientOrderId) == 1))) {
         OrderStatusMessageHandler(clientOrderId, 0, 0, 0);
@@ -61,9 +55,6 @@ void AutoTrader::ErrorMessageHandler(unsigned long clientOrderId,
 void AutoTrader::HedgeFilledMessageHandler(unsigned long clientOrderId,
                                            unsigned long price,
                                            unsigned long volume) {
-    RLOG(LG_AT, LogLevel::LL_INFO)
-        << "hedge order " << clientOrderId << " filled for " << volume
-        << " lots at $" << price << " average price in cents";
 }
 
 void AutoTrader::OrderBookMessageHandler(
@@ -87,10 +78,8 @@ void AutoTrader::OrderBookMessageHandler(
 
         // set bid / ask price + transaction fee
         double transactionFee = (TAKER_FEE + MAKER_FEE);
-        unsigned long newAskPrice =
-            (askPrices[0] != 0) ? (askPrices[0] * (1 + transactionFee)) : 0;
-        unsigned long newBidPrice =
-            (bidPrices[0] != 0) ? (bidPrices[0] * (1 - transactionFee)) : 0;
+        unsigned long newAskPrice = (askPrices[0] != 0) ? (askPrices[0] * (1 + transactionFee)) : 0;
+        unsigned long newBidPrice = (bidPrices[0] != 0) ? (bidPrices[0] * (1 - transactionFee)) : 0;
 
         // set bid / ask price + profits
         PROFIT = (allowSell && allowBuy) ? PROFIT : PROFIT / REDUCED_PORTION;
@@ -116,17 +105,13 @@ void AutoTrader::OrderBookMessageHandler(
         if (allowSell && mAskId == 0 && newAskPrice != 0) {
             mAskId = mNextMessageId++;
             mAskPrice = newAskPrice;
-            //std::cout << "sell " << newAskPrice << std::endl;
-            SendInsertOrder(mAskId, Side::SELL, newAskPrice,
-                            POSITION_LIMIT + mPosition, Lifespan::GOOD_FOR_DAY);
+            SendInsertOrder(mAskId, Side::SELL, newAskPrice, POSITION_LIMIT + mPosition, Lifespan::GOOD_FOR_DAY);
             mAsks.emplace(mAskId);
         }
         if (allowBuy && mBidId == 0 && newBidPrice != 0) {
             mBidId = mNextMessageId++;
             mBidPrice = newBidPrice;
-            //std::cout << "buy " << newBidPrice << std::endl;
-            SendInsertOrder(mBidId, Side::BUY, newBidPrice,
-                            POSITION_LIMIT - mPosition, Lifespan::GOOD_FOR_DAY);
+            SendInsertOrder(mBidId, Side::BUY, newBidPrice, POSITION_LIMIT - mPosition, Lifespan::GOOD_FOR_DAY);
             mBids.emplace(mBidId);
         }
     }
@@ -143,19 +128,14 @@ signed long runroundFloorHundredth(signed long d) {
 void AutoTrader::OrderFilledMessageHandler(unsigned long clientOrderId,
                                            unsigned long price,
                                            unsigned long volume) {
-    RLOG(LG_AT, LogLevel::LL_INFO)
-        << "order " << clientOrderId << " filled for " << volume << " lots at $"
-        << price << " cents";
 
     // hedge order when order is filled
     if (mAsks.count(clientOrderId) == 1) {
         mPosition -= (long)volume;
-        SendHedgeOrder(mNextMessageId++, Side::BUY, MAX_ASK_NEAREST_TICK,
-                       volume);
+        SendHedgeOrder(mNextMessageId++, Side::BUY, MAX_ASK_NEAREST_TICK,volume);
     } else if (mBids.count(clientOrderId) == 1) {
         mPosition += (long)volume;
-        SendHedgeOrder(mNextMessageId++, Side::SELL, MIN_BID_NEAREST_TICK,
-                       volume);
+        SendHedgeOrder(mNextMessageId++, Side::SELL, MIN_BID_NEAREST_TICK,volume);
     }
 }
 
@@ -181,10 +161,4 @@ void AutoTrader::TradeTicksMessageHandler(
     const std::array<unsigned long, TOP_LEVEL_COUNT>& askVolumes,
     const std::array<unsigned long, TOP_LEVEL_COUNT>& bidPrices,
     const std::array<unsigned long, TOP_LEVEL_COUNT>& bidVolumes) {
-    RLOG(LG_AT, LogLevel::LL_INFO)
-        << "trade ticks received for " << instrument << " instrument"
-        << ": ask prices: " << askPrices[0]
-        << "; ask volumes: " << askVolumes[0]
-        << "; bid prices: " << bidPrices[0]
-        << "; bid volumes: " << bidVolumes[0];
 }
