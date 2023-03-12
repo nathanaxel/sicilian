@@ -39,7 +39,6 @@ constexpr int MAX_ASK_NEAREST_TICK = MAXIMUM_ASK / TICK_SIZE_IN_CENTS * TICK_SIZ
 
 constexpr double TAKER_FEE = 0.0002;
 constexpr double MAKER_FEE = -0.0001;
-constexpr double BUFFER = 0;
 constexpr double PROFIT = 300;
 
 signed long runroundCeilHundredth (signed long d);
@@ -86,8 +85,8 @@ void AutoTrader::OrderBookMessageHandler(Instrument instrument,
         double priceAdjustment = (TAKER_FEE - MAKER_FEE);
         unsigned long newAskPrice = (askPrices[0] != 0) ? (askPrices[0] * (1+priceAdjustment))  : 0;
         unsigned long newBidPrice = (bidPrices[0] != 0) ? (bidPrices[0] * (1-priceAdjustment))  : 0;
-        newAskPrice = runroundCeilHundredth(newAskPrice) + BUFFER + PROFIT;
-        newBidPrice = runroundCeilHundredth(newBidPrice) - (BUFFER + PROFIT);
+        newAskPrice = runroundCeilHundredth(newAskPrice) +  PROFIT;
+        newBidPrice = runroundCeilHundredth(newBidPrice) - ( PROFIT);
 
         //load off if we have significant short/long position
         //wait for 0.5 seconds to check if position has been loaded off
@@ -158,12 +157,12 @@ void AutoTrader::OrderFilledMessageHandler(unsigned long clientOrderId,
     if (mAsks.count(clientOrderId) == 1)
     {
         mPosition -= (long)volume;
-        SendHedgeOrder(mNextMessageId++, Side::BUY, price + BUFFER, volume);
+        SendHedgeOrder(mNextMessageId++, Side::BUY, MAX_ASK_NEAREST_TICK, volume);
     }
     else if (mBids.count(clientOrderId) == 1)
     {
         mPosition += (long)volume;
-        SendHedgeOrder(mNextMessageId++, Side::SELL, price - BUFFER, volume);
+        SendHedgeOrder(mNextMessageId++, Side::SELL, MIN_BID_NEARST_TICK, volume);
     }
 }
 
