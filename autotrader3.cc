@@ -32,14 +32,14 @@ using namespace ReadyTraderGo;
 RTG_INLINE_GLOBAL_LOGGER_WITH_CHANNEL(LG_AT, "AUTO")
 
 constexpr int LOT_SIZE = 10;
-constexpr int POSITION_LIMIT = 100;
+constexpr int POSITION_LIMIT = 80;
 constexpr int TICK_SIZE_IN_CENTS = 100;
-constexpr int MIN_BID_NEARST_TICK = (MINIMUM_BID + TICK_SIZE_IN_CENTS) / TICK_SIZE_IN_CENTS * TICK_SIZE_IN_CENTS;
+constexpr int MIN_BID_NEAREST_TICK = (MINIMUM_BID + TICK_SIZE_IN_CENTS) / TICK_SIZE_IN_CENTS * TICK_SIZE_IN_CENTS;
 constexpr int MAX_ASK_NEAREST_TICK = MAXIMUM_ASK / TICK_SIZE_IN_CENTS * TICK_SIZE_IN_CENTS;
 
 constexpr double TAKER_FEE = 0.0002;
 constexpr double MAKER_FEE = -0.0001;
-constexpr double PROFIT = 300;
+constexpr double PROFIT = 200;
 
 signed long runroundCeilHundredth (signed long d);
 AutoTrader::AutoTrader(boost::asio::io_context& context) : BaseAutoTrader(context)
@@ -81,31 +81,23 @@ void AutoTrader::OrderBookMessageHandler(Instrument instrument,
     //Use FUTURE (liquid order book) to set prices for ETF (illiquid order book)
     if (instrument == Instrument::FUTURE)
     {
+        double PROFIT = 100;
+
         //set bid / ask price
-        double priceAdjustment = (TAKER_FEE - MAKER_FEE);
+        double priceAdjustment = (TAKER_FEE + MAKER_FEE);
         unsigned long newAskPrice = (askPrices[0] != 0) ? (askPrices[0] * (1+priceAdjustment))  : 0;
         unsigned long newBidPrice = (bidPrices[0] != 0) ? (bidPrices[0] * (1-priceAdjustment))  : 0;
-        newAskPrice = runroundCeilHundredth(newAskPrice) +  PROFIT;
-        newBidPrice = runroundCeilHundredth(newBidPrice) - ( PROFIT);
 
-        //load off if we have significant short/long position
-        //wait for 0.5 seconds to check if position has been loaded off
-        if (mPosition > 30){
-            mAskId = mNextMessageId++;
-            SendInsertOrder(mAskId, Side::SELL, newAskPrice - PROFIT, 30, Lifespan::FILL_AND_KILL);
-            //std::cout<<"sell off " << newAskPrice - PROFIT << std::endl;
-            mAsks.emplace(mAskId);
-            return;
-        }
-        else if (mPosition < -30){
-            mBidId = mNextMessageId++;
-            SendInsertOrder(mBidId, Side::BUY, newBidPrice + PROFIT, 30, Lifespan::FILL_AND_KILL);
-            //std::cout<<"buy off " << newAskPrice + PROFIT << std::endl;
-            mBids.emplace(mBidId);
-            return;
-        }
+        //load off if we have significant short/long position to prevent overlimit 
+        //by rules: you can only have -100 <= mPosition <= 100
+        allowBuy = (mPosition <= POSITION_LIMIT );
+        allowSell = (mPosition >= -POSITION_LIMIT);
 
-        //balance 
+        //set bid / ask price + profits
+        PROFIT = (allowSell && allowBuy) ? PROFIT: PROFIT/3;
+        newAskPrice = runroundCeilHundredth(newAskPrice + PROFIT);
+        newBidPrice = runroundCeilHundredth(newBidPrice - PROFIT); 
+
 
         //cancel existing order if price set is different from previous setted price
         if (mAskId != 0 && newAskPrice != 0 && newAskPrice != mAskPrice)
@@ -121,19 +113,19 @@ void AutoTrader::OrderBookMessageHandler(Instrument instrument,
 
         //create new order with the new setted price
         //should only have 1 order for buy / sell each
-        if (mAskId == 0 && newAskPrice != 0 && mPosition > -POSITION_LIMIT)
+        if (allowSell && mAskId == 0 && newAskPrice != 0 && mPosition > -POSITION_LIMIT)
         {
             mAskId = mNextMessageId++;
             mAskPrice = newAskPrice;
-            //std::cout << "sell " << newAskPrice << std::endl;
-            SendInsertOrder(mAskId, Side::SELL, newAskPrice, LOT_SIZE, Lifespan::GOOD_FOR_DAY);
+            std::cout << "sell " << newAskPrice << std::endl;
+            SendInsertOrder(mAskId, Side::SELL, newAskPrice, LOT_SIZE, Lifespan::FILL_AND_KILL);
             mAsks.emplace(mAskId);
         }
-        if (mBidId == 0 && newBidPrice != 0 && mPosition < POSITION_LIMIT)
+        if (allowBuy && mBidId == 0 && newBidPrice != 0 && mPosition < POSITION_LIMIT)
         {
             mBidId = mNextMessageId++;
             mBidPrice = newBidPrice;
-            //std::cout << "buy " << mBidPrice << std::endl;
+            std::cout << "buy " << mBidPrice << std::endl;
             SendInsertOrder(mBidId, Side::BUY, newBidPrice, LOT_SIZE, Lifespan::GOOD_FOR_DAY);
             mBids.emplace(mBidId);
         }
@@ -162,7 +154,7 @@ void AutoTrader::OrderFilledMessageHandler(unsigned long clientOrderId,
     else if (mBids.count(clientOrderId) == 1)
     {
         mPosition += (long)volume;
-        SendHedgeOrder(mNextMessageId++, Side::SELL, MIN_BID_NEARST_TICK, volume);
+        SendHedgeOrder(mNextMessageId++, Side::SELL, MIN_BID_NEAREST_TICK, volume);
     }
 }
 

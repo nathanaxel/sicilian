@@ -103,7 +103,9 @@ private:
     unsigned long mBidPrice = 0;
 
     signed long mPosition = 0;
-    signed long hPosition = 0;
+    
+    bool allowBuy = true;
+    bool allowSell = true;
 
     std::unordered_set<unsigned long> mAsks;
     std::unordered_set<unsigned long> mBids;
