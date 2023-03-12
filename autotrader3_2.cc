@@ -22,13 +22,12 @@
 #include <boost/asio/io_context.hpp>
 #include <iostream>
 
-#include "autotrader3.h"
+#include "autotrader3_2.h"
 
 using namespace ReadyTraderGo;
 
 RTG_INLINE_GLOBAL_LOGGER_WITH_CHANNEL(LG_AT, "AUTO")
 
-constexpr int LOT_SIZE = 20;
 constexpr int POSITION_LIMIT = 100;
 constexpr int TICK_SIZE_IN_CENTS = 100;
 constexpr int MIN_BID_NEAREST_TICK = (MINIMUM_BID + TICK_SIZE_IN_CENTS) /
@@ -38,7 +37,6 @@ constexpr int MAX_ASK_NEAREST_TICK =
 
 constexpr double TAKER_FEE = 0.0002;
 constexpr double MAKER_FEE = -0.0001;
-constexpr double PROFIT = 100;
 
 signed long runroundCeilHundredth(signed long d);
 signed long runroundFloorHundredth(signed long d);
@@ -99,23 +97,26 @@ void AutoTrader::OrderBookMessageHandler(
         newAskPrice = runroundCeilHundredth(newAskPrice + PROFIT);
         newBidPrice = runroundFloorHundredth(newBidPrice - PROFIT);
 
-        // cancel existing order if price set is different from previous setted
-        // price
-        if (mAskId != 0 && newAskPrice != 0) {  //&& newAskPrice != mAskPrice) {
+        // cancel existing order if price set is different from previous setted price
+        if (mAskId != 0 && newAskPrice != 0 && newAskPrice != mAskPrice) {  
             SendCancelOrder(mAskId);
-            mAskId = 0;
         }
-        if (mBidId != 0 &&
-            newBidPrice != 0) {  // && newBidPrice != mBidPrice) {
+        if (mBidId != 0 && newBidPrice != 0 && newBidPrice != mBidPrice) {  
             SendCancelOrder(mBidId);
-            mBidId = 0;
         }
+
+        //confirm that order has been cancelled
+        if (!mAsks.count(mAskId))  
+            mAskId = 0;
+        if (!mBids.count(mBidId))
+            mBidId = 0;
 
         // create new order with the new setted price
         // should only have 1 order for buy / sell each
         if (allowSell && mAskId == 0 && newAskPrice != 0) {
             mAskId = mNextMessageId++;
             mAskPrice = newAskPrice;
+            //std::cout << "sell " << newAskPrice << std::endl;
             SendInsertOrder(mAskId, Side::SELL, newAskPrice,
                             POSITION_LIMIT + mPosition, Lifespan::GOOD_FOR_DAY);
             mAsks.emplace(mAskId);
@@ -123,6 +124,7 @@ void AutoTrader::OrderBookMessageHandler(
         if (allowBuy && mBidId == 0 && newBidPrice != 0) {
             mBidId = mNextMessageId++;
             mBidPrice = newBidPrice;
+            //std::cout << "buy " << newBidPrice << std::endl;
             SendInsertOrder(mBidId, Side::BUY, newBidPrice,
                             POSITION_LIMIT - mPosition, Lifespan::GOOD_FOR_DAY);
             mBids.emplace(mBidId);
