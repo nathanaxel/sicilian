@@ -12,12 +12,13 @@ else()
 endif()
 
 find_package(Boost 1.74 COMPONENTS date_time log system thread
-        OPTIONAL_COMPONENTS container graph math_c99 math_c99f math_tr1
-        math_tr1f random regex timer unit_test_framework)
+    OPTIONAL_COMPONENTS container graph math_c99 math_c99f math_tr1
+    math_tr1f random regex timer unit_test_framework)
+
 if(NOT ${Boost_FOUND})
     message(FATAL_ERROR
-            "Ready Trader Go requires the free Boost C++ libraries version "
-            "1.74 or above. See https://www.boost.org/.")
+        "Ready Trader Go requires the free Boost C++ libraries version "
+        "1.74 or above. See https://www.boost.org/.")
 endif()
 
 add_compile_definitions(BOOST_LOG_DYN_LINK=1)
@@ -39,6 +40,9 @@ target_link_libraries(autotrader2 PRIVATE ready_trader_go_lib ${Boost_LIBRARIES}
 
 add_executable(autotrader3 main3.cc autotrader3.cc autotrader3.h)
 target_link_libraries(autotrader3 PRIVATE ready_trader_go_lib ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+
+add_executable(autotrader3_2 main3.cc autotrader3_2.cc autotrader3_2.h)
+target_link_libraries(autotrader3_2 PRIVATE ready_trader_go_lib ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
 if(${Boost_UNIT_TEST_FRAMEWORK_FOUND})
     if(IS_DIRECTORY ${PROJECT_SOURCE_DIR}/unit_tests)
