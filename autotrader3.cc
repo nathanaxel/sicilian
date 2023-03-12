@@ -78,26 +78,28 @@ void AutoTrader::OrderBookMessageHandler(Instrument instrument,
                                          const std::array<unsigned long, TOP_LEVEL_COUNT>& bidPrices,
                                          const std::array<unsigned long, TOP_LEVEL_COUNT>& bidVolumes)
 {
-    //Use FUTURE (liquid order book) to set prices for ETF (illiquid order book)
+    //Use FUTURE (liquid order book) prices to set prices for ETF (illiquid order book)
     if (instrument == Instrument::FUTURE)
     {
+        //profit per order filled
         double PROFIT = 100;
+        double REDUCED_PORTION = 3;
 
-        //set bid / ask price
-        double priceAdjustment = (TAKER_FEE + MAKER_FEE);
-        unsigned long newAskPrice = (askPrices[0] != 0) ? (askPrices[0] * (1+priceAdjustment))  : 0;
-        unsigned long newBidPrice = (bidPrices[0] != 0) ? (bidPrices[0] * (1-priceAdjustment))  : 0;
-
-        //load off if we have significant short/long position to prevent overlimit 
+        //prevent buying / selling if we have significant short/long position to prevent overlimit 
+        //mPosition: position in ETF
         //by rules: you can only have -100 <= mPosition <= 100
         allowBuy = (mPosition <= POSITION_LIMIT );
         allowSell = (mPosition >= -POSITION_LIMIT);
 
-        //set bid / ask price + profits
-        PROFIT = (allowSell && allowBuy) ? PROFIT: PROFIT/3;
-        newAskPrice = runroundCeilHundredth(newAskPrice + PROFIT);
-        newBidPrice = runroundCeilHundredth(newBidPrice - PROFIT); 
+        //set bid / ask price + transaction fee
+        double transactionFee = (TAKER_FEE + MAKER_FEE);
+        unsigned long newAskPrice = (askPrices[0] != 0) ? (askPrices[0] * (1+transactionFee))  : 0;
+        unsigned long newBidPrice = (bidPrices[0] != 0) ? (bidPrices[0] * (1-transactionFee))  : 0;
 
+        //set bid / ask price + profits
+        PROFIT = (allowSell && allowBuy) ? PROFIT: PROFIT/REDUCED_PORTION;
+        newAskPrice = runroundCeilHundredth(newAskPrice + PROFIT);
+        newBidPrice = runroundCeilHundredth(newBidPrice - PROFIT);
 
         //cancel existing order if price set is different from previous setted price
         if (mAskId != 0 && newAskPrice != 0 && newAskPrice != mAskPrice)
@@ -118,7 +120,7 @@ void AutoTrader::OrderBookMessageHandler(Instrument instrument,
             mAskId = mNextMessageId++;
             mAskPrice = newAskPrice;
             std::cout << "sell " << newAskPrice << std::endl;
-            SendInsertOrder(mAskId, Side::SELL, newAskPrice, LOT_SIZE, Lifespan::FILL_AND_KILL);
+            SendInsertOrder(mAskId, Side::SELL, newAskPrice, LOT_SIZE, Lifespan::GOOD_FOR_DAY);
             mAsks.emplace(mAskId);
         }
         if (allowBuy && mBidId == 0 && newBidPrice != 0 && mPosition < POSITION_LIMIT)
@@ -144,7 +146,6 @@ void AutoTrader::OrderFilledMessageHandler(unsigned long clientOrderId,
     RLOG(LG_AT, LogLevel::LL_INFO) << "order " << clientOrderId << " filled for " << volume
                                    << " lots at $" << price << " cents";
 
-    
     //hedge order when order is filled
     if (mAsks.count(clientOrderId) == 1)
     {
