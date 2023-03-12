@@ -39,9 +39,9 @@ constexpr int MAX_ASK_NEAREST_TICK = MAXIMUM_ASK / TICK_SIZE_IN_CENTS * TICK_SIZ
 
 constexpr double TAKER_FEE = 0.0002;
 constexpr double MAKER_FEE = -0.0001;
-constexpr double PROFIT = 200;
 
 signed long runroundCeilHundredth (signed long d);
+signed long runroundFloorHundredth (signed long d);
 AutoTrader::AutoTrader(boost::asio::io_context& context) : BaseAutoTrader(context)
 {
     
@@ -99,7 +99,7 @@ void AutoTrader::OrderBookMessageHandler(Instrument instrument,
         //set bid / ask price + profits
         PROFIT = (allowSell && allowBuy) ? PROFIT: PROFIT/REDUCED_PORTION;
         newAskPrice = runroundCeilHundredth(newAskPrice + PROFIT);
-        newBidPrice = runroundCeilHundredth(newBidPrice - PROFIT);
+        newBidPrice = runroundFloorHundredth(newBidPrice - PROFIT);
 
         //cancel existing order if price set is different from previous setted price
         if (mAskId != 0 && newAskPrice != 0 && newAskPrice != mAskPrice)
@@ -137,6 +137,10 @@ void AutoTrader::OrderBookMessageHandler(Instrument instrument,
 
 signed long runroundCeilHundredth (signed long d){
 	return ((d % 100) != 0) ? d - (d % 100) + 100 : d;
+}
+
+signed long runroundFloorHundredth (signed long d){
+	return ((d % 100) != 0) ? d - (d % 100) - 100 : d;
 }
 
 void AutoTrader::OrderFilledMessageHandler(unsigned long clientOrderId,
