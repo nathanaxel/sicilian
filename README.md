@@ -8,7 +8,7 @@ Copy and replace files to Optiver's codebase
 cmake -DCMAKE_BUILD_TYPE=Debug -B build  
 cmake --build build --config Debug     
 cp build/autotrader* .  
-python3 rtg.py run autotrader autotrader1 autotrader2 autotrader3  
+python3 rtg.py run autotrader3_6 
 ```
 
 ## Versions
