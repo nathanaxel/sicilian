@@ -18,5 +18,6 @@ python3 rtg.py run autotrader3_6
 | autotrader1           | 1.0        | Default configuration without heghing         |
 | autotrader2           | 2.0         | Marker-taker strategy: buy / sell ETF based on average gap and s.d. between ETF / Future         |
 | autotrader3          | 3.0         | Market-maker strategy: delta neutral         |
+| autotrader4          | 4.0         | Market-maker strategy: Ichimoku        |
 
 
