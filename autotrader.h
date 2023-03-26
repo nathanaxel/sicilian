@@ -22,6 +22,7 @@
 #include <memory>
 #include <string>
 #include <unordered_set>
+#include <deque>
 
 #include <boost/asio/io_context.hpp>
 
@@ -95,11 +96,20 @@ public:
 
 private:
     unsigned long mNextMessageId = 1;
+
     unsigned long mAskId = 0;
     unsigned long mAskPrice = 0;
     unsigned long mBidId = 0;
     unsigned long mBidPrice = 0;
+
+    unsigned long newAskPrice = 0;
+    unsigned long newBidPrice = 0;
+
     signed long mPosition = 0;
+    
+    bool allowBuy = true;
+    bool allowSell = true;
+
     std::unordered_set<unsigned long> mAsks;
     std::unordered_set<unsigned long> mBids;
 };

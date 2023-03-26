@@ -22,7 +22,7 @@
 #include <memory>
 #include <string>
 #include <unordered_set>
-#include <deque>
+#include <set>
 
 #include <boost/asio/io_context.hpp>
 
@@ -94,9 +94,34 @@ public:
                                   const std::array<unsigned long, ReadyTraderGo::TOP_LEVEL_COUNT>& bidPrices,
                                   const std::array<unsigned long, ReadyTraderGo::TOP_LEVEL_COUNT>& bidVolumes) override;
 
+    
+    unsigned long CalcConversionLine(std::deque<unsigned long> &prices);
+    unsigned long CalcBaseLine(std::deque<unsigned long> &prices);
+    unsigned long CalcLeadingSpanA(unsigned long conversionLinePrice, unsigned long baseLinePrice);
+    unsigned long CalcLeadingSpanB(std::deque<unsigned long> &prices);
+    unsigned long GetCloudTop(unsigned long conversionLinePrice, unsigned long baseLinePrice, std::deque<unsigned long> &prices);
+    unsigned long GetCloudBottom(unsigned long conversionLinePrice, unsigned long baseLinePrice, std::deque<unsigned long> &prices);
+    unsigned long IsAboveCloud(unsigned long cloudPrice, unsigned long currentAskPrice);
+    unsigned long IsBelowCloud(unsigned long cloudPrice, unsigned long currentBidPrice);
+
+    bool OpenBuy(unsigned long buyPrice);
+    bool CloseBuy(unsigned long sellPrice);
+
+    bool OpenSell(unsigned long sellPrice);
+    bool CloseSell(unsigned long buyPrice);
+
+
+    void AddEntry(unsigned long buyPrice, unsigned long sellPrice);
+
+    void Buy(unsigned long askPrice, unsigned long volume, ReadyTraderGo::Lifespan lifespan);
+    void Sell(unsigned long bidPrice, unsigned long volume, ReadyTraderGo::Lifespan lifespan);
+
+    void InsertOrderWhenPossibleToSell(unsigned long bidPrice);
+    void InsertOrderWhenPossibleToBuy(unsigned long askPrice);
+    
+
 private:
     unsigned long mNextMessageId = 1;
-    unsigned long mNextNextMessageId = 100;
 
     unsigned long mAskId = 0;
     unsigned long mAskPrice = 0;
@@ -105,17 +130,27 @@ private:
 
     signed long mPosition = 0;
 
-    unsigned long lastPriceETF = 0;
-    unsigned long lastPriceFuture = 0;
+    unsigned long newAskPrice = 0;
+    unsigned long newBidPrice = 0;
 
-    double avgGap = 0.0;
-    double sdGap = 0.0;
-    std::deque<signed long> ETFPrices;
-    std::deque<signed long> FuturePrices;
-    std::deque<signed long> gaps;
+    std::deque<unsigned long> buyPrices;
+    std::deque<unsigned long> sellPrices;
 
     std::unordered_set<unsigned long> mAsks;
     std::unordered_set<unsigned long> mBids;
+
+    unsigned long buyPrice = 0;
+    unsigned long sellPrice = 0;
+
+    unsigned long lastETFAsk = 0;
+    unsigned long lastETFBid = 0;
+    unsigned long lastFutureAsk = 0;
+    unsigned long lastFutureBid = 0;
+
+    unsigned long stopLoss = 0;
+
+    unsigned long lastBuyPrice = 0;
+    signed long cloudColour = 0;
 };
 
 #endif //CPPREADY_TRADER_GO_AUTOTRADER_H
