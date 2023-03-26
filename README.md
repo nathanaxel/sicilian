@@ -28,7 +28,7 @@ Make sure PySide6, CMake, and boost are installed.
 cmake -DCMAKE_BUILD_TYPE=Debug -B build  
 cmake --build build --config Debug     
 cp build/autotrader* .  
-python3 rtg.py run autotrader3_6 
+python3 rtg.py run autotrader autotrader2 
 ```
 
 ## Versions
