@@ -5,7 +5,7 @@
 #include <iostream>
 #include <deque>
 
-#include "autotrader4a.h"
+#include "autotrader2.h"
 
 using namespace ReadyTraderGo;
 

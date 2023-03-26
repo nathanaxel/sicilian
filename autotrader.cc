@@ -21,7 +21,7 @@
 #include <boost/asio/io_context.hpp>
 #include <iostream>
 
-#include "autotraderFinal.h"
+#include "autotrader.h"
 
 using namespace ReadyTraderGo;
 
