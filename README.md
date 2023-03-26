@@ -2,18 +2,23 @@
 
 ## Result
 
-Overall result: Top 32 out of 1053 submissions (97th percentile)
+| Round          | Position   |
+| -------------  | ------------- | 
+| 1    |  1st position|
+| 2    |  1st position |
+| 3    |  1st position |
+| 4    |  1st position |
+| 5    |  1st position |
+| 6    |  2nd position |
+| 7    |  8th position |
+
+Overall result: Top 32 out of 1053 submissions (97th percentile)</br>
 Team Name: SicilianDragon 161660
 
 Note: Teammates MIA. I did this on my own.
 
-Round 1: 1st position
-Round 2: 1st position
-Round 3: 1st position
-Round 4: 1st position
-Round 5: 1st position
-Round 6: 2nd position
-Round 7: 8th position
+
+
 
 ## How To Run
 
@@ -27,10 +32,10 @@ python3 rtg.py run autotrader3_6
 ```
 
 ## Versions
-| Name          | Description     |
+| Name          | Description   |
 | ------------- | ------------- | 
-| autotrader          |  Final configuration submitted (Delta-neutral strategy)      |
-| autotrader2           |  IchIchimoku Kinkō Hyō Strategy        |
+| autotrader    |  Final configuration submitted (Delta-neutral strategy)|
+| autotrader2   |  IchIchimoku Kinkō Hyō Strategy |
 
 
 
