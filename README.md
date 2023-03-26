@@ -6,7 +6,7 @@ Top 32 out of 1053 submissions (97th percentile)
 
 ## How To Run
 
-Copy and replace files to Optiver's codebase
+Make sure PySide6, CMake, and boost are installed.
 
 ```shell
 cmake -DCMAKE_BUILD_TYPE=Debug -B build  
