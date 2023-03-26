@@ -17,9 +17,6 @@ Team Name: SicilianDragon 161660
 
 Note: Teammates MIA. I did this on my own.
 
-
-
-
 ## How To Run
 
 Make sure PySide6, CMake, and boost are installed.
@@ -37,8 +34,8 @@ python3 rtg.py run autotrader autotrader2
 | autotrader    |  Final configuration submitted (Delta-neutral strategy)|
 | autotrader2   |  Ichimoku Kinkō Hyō Strategy |
 
-## Quotes
-"Looked in my demons and saw myself. Put all my meaning in someone else."
+
+
 
 
 
